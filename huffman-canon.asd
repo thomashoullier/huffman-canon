@@ -7,4 +7,4 @@
   :components
   ((:module "src"
     :components ((:file "package")
-                 ))))
+                 (:file "huffman-canon" :depends-on ("package"))))))
