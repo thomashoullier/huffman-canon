@@ -9,7 +9,11 @@ the number of codes of length 1, then of length 2 etc.. up to the maximum code
 length. Used when decoding canonical codes."
     :accessor length-counts :initarg length-counts
     :initform nil)
-
+   (encoded-dictionary
+    :documentation "Encoded message for each symbol in the alphabet. Used when
+encoding messages."
+    :accessor encoded-dictionary :initarg encoded-dictionary
+    :initform nil)
    ))
 
 (defun make-huffman-canon-from-code-lengths (code-lengths)
@@ -26,18 +30,17 @@ frequencies: "
 
   )
 
-(defmethod decode ((huffman-canon hfm) str-in-enc str-out-dec)
-  "Decode a stream of bits into a stream of symbol positions from the alphabet.
-hfm:
-str-in-enc:
-str-out-dec:"
+(defmethod decode ((hfm huffman-canon) str-in-enc str-out-dec)
+  ""
 
   )
 
-(defmethod encode ((huffman-canon hfm) str-in str-out-enc)
-  "Encode a stream of symbol positions in the alphabet into a stream of bits.
-hfm:
-str-in:
-str-out-enc:"
-
-  )
+(defmethod encode ((hfm huffman-canon) indices-array)
+  "Encode an array of indices pointing to symbols to encode into an encoded
+array of bits."
+  (with-slots ((encoded-dictionary encoded-dictionary)) hfm
+    (let ((encoded-bits (make-array 0 :fill-pointer 0 :element-type 'bit)))
+      (loop for index across indices-array do
+        (loop for bit-i across (aref encoded-dictionary index) do
+          (vector-push-extend bit-i encoded-bits)))
+      encoded-bits)))
