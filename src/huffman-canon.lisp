@@ -30,8 +30,9 @@ frequencies: "
 
   )
 
-(defmethod decode ((hfm huffman-canon) str-in-enc str-out-dec)
-  ""
+(defmethod decode ((hfm huffman-canon) bits-array)
+  "Decode an array of bits containing the symbols in encoded bit format."
+  ;; We took the method from https://stackoverflow.com/a/29579194/10376845.
 
   )
 
@@ -40,6 +41,7 @@ frequencies: "
 array of bits."
   (with-slots ((encoded-dictionary encoded-dictionary)) hfm
     (let ((encoded-bits (make-array 0 :fill-pointer 0 :element-type 'bit)))
+      ;; We simply recopy the entries of the encoded dictionary.
       (loop for index across indices-array do
         (loop for bit-i across (aref encoded-dictionary index) do
           (vector-push-extend bit-i encoded-bits)))
