@@ -7,6 +7,8 @@
   :components
   ((:module "src"
     :components ((:file "package")
-                 (:file "huffman-canon" :depends-on ("package"))
+                 (:file "encoded-dictionary" :depends-on ("package"))
+                 (:file "huffman-canon" :depends-on ("package"
+                                                     "encoded-dictionary"))
                  (:file "encoder-decoder"
                   :depends-on ("package" "huffman-canon"))))))
