@@ -13,15 +13,6 @@ length. Used when decoding canonical codes."
     :documentation "Encoded message for each symbol in the alphabet. Used when
 encoding messages."
     :accessor encoded-dictionary :initarg encoded-dictionary
-    :initform nil)
-   ;; IS IN FACT NOT NEEDED ?
-   ;; We could just return purely the index into this array while decoding.
-   ;; We assume the user provided symbols are ordered by decreasing frequency
-   ;; and lexicographically when they have the same frequency.
-   (canon-order-symbols
-    :documentation "Canonically ordered indices of symbols to encode.
-Used when decoding messages."
-    :accessor canon-order-symbols :initarg canon-order-symbols
     :initform nil)))
 
 (defun make-huffman-canon-from-code-lengths (code-lengths)
@@ -49,8 +40,7 @@ bits-array: Array of bits constituting an encoded message. eg. #*110110100..."
   ;; read message is present in a length bin or not just by its length, its
   ;; value, the value of the first encoded message in the length bin, and the
   ;; size of the length bin.
-  (with-slots ((length-counts length-counts)
-               (canon-order-symbols canon-order-symbols)) hfm
+  (with-slots ((length-counts length-counts)) hfm
     (let (;; Decoded message represented as indices into the symbols dictionary.
           (decoded-indices (make-array 0 :fill-pointer 0 :element-type 'fixnum))
           ;; Current bit in the encoded message.
@@ -77,9 +67,8 @@ bits-array: Array of bits constituting an encoded message. eg. #*110110100..."
             ;; When the current code is present in the current length bin.
             (when (< pos-in-length-bin count)
               ;; Return the decoded symbol index.
-              (vector-push-extend
-               (aref canon-order-symbols (+ pos-first pos-in-length-bin))
-               decoded-indices)
+              (vector-push-extend (+ pos-first pos-in-length-bin)
+                                  decoded-indices)
               (return))
             ;; Go to the next length bin.
             (incf pos-first count)
