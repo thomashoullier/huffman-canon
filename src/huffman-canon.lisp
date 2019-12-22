@@ -14,6 +14,11 @@ length. Used when decoding canonical codes."
 encoding messages."
     :accessor encoded-dictionary :initarg encoded-dictionary
     :initform nil)
+   ;; IS IN FACT NOT NEEDED ?
+   ;; We could just return purely the index into this array while decoding.
+   ;; We assume the user provided symbols are ordered by decreasing frequency
+   ;; and lexicographically when they have the same frequency.
+   ;; maybe needed in fact
    (canon-order-symbols
     :documentation "Canonically ordered indices of symbols to encode.
 Used when decoding messages."
@@ -63,25 +68,25 @@ bits-array: Array of bits constituting an encoded message. eg. #*110110100..."
           (pos-in-length-bin 0))
       (loop while (< i-bit (length bits-array)) do
         (psetf first 0 pos-first 0 read-code 0)
-	(loop for count across length-counts do
-	  ;; Set the LSB of the current code.
-	  (incf read-code (aref bits-array i-bit))
-	  (incf i-bit)
-	  ;; When there are codes in the length bin.
-	  (when (/= 0 count)
-	    (setf pos-in-length-bin (- read-code first))
-	    ;; When the current code is present in the current length bin.
-	    (when (< pos-in-length-bin count)
-	      ;; Return the decoded symbol index.
-	      (vector-push-extend
-	       (aref canon-order-symbols (+ pos-first pos-in-length-bin))
-	       decoded-indices)
-	      (return))
-	    ;; Go to the next length bin.
-	    (incf pos-first count)
-	    (incf first count))
-	  (psetf first (ash first 1)
-		 read-code (ash read-code 1))))
+        (loop for count across length-counts do
+          ;; Set the LSB of the current code.
+          (incf read-code (aref bits-array i-bit))
+          (incf i-bit)
+          ;; When there are codes in the length bin.
+          (when (/= 0 count)
+            (setf pos-in-length-bin (- read-code first))
+            ;; When the current code is present in the current length bin.
+            (when (< pos-in-length-bin count)
+              ;; Return the decoded symbol index.
+              (vector-push-extend
+               (aref canon-order-symbols (+ pos-first pos-in-length-bin))
+               decoded-indices)
+              (return))
+            ;; Go to the next length bin.
+            (incf pos-first count)
+            (incf first count))
+          (psetf first (ash first 1)
+                 read-code (ash read-code 1))))
       decoded-indices)))
 
 (defmethod encode ((hfm huffman-canon) indices-array)
@@ -94,3 +99,19 @@ array of bits."
         (loop for bit-i across (aref encoded-dictionary index) do
           (vector-push-extend bit-i encoded-bits)))
       encoded-bits)))
+
+(defun lengths-to-length-counts (code-lengths)
+  "Simply count the number of elements of each length. Return length-counts[N],
+the number of symbols with length N.
+code-lengths: The length of the encoded message for each symbol in the alphabet.
+              Sorted in decreasing order. eg. #[3 3 3 2 1]."
+  (let ((length-counts
+          (make-array (1+ (aref code-lengths 0)) :element-type 'fixnum))
+        ;; Position in code-lengths.
+        (i-sym 0))
+    (loop for len from (aref code-lengths 0) downto 0 do
+      (loop while (and (< i-sym (length code-lengths))
+                       (= len (aref code-lengths i-sym)))
+            do (incf (aref length-counts len))
+               (incf i-sym)))
+    length-counts))
