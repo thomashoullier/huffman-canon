@@ -1,14 +1,16 @@
 ;;;; Rove test suite for huffman-canon.
+(require :array-operations)
 (in-package :huffman-canon/test)
 
 ;;; RFC1951 example
 (deftest RFC1951
-  (let ((code-lengths #(2 3 3 3 3 3 4 4))
-        (hfm)
-        ;; Canonically ordered encoded dictionary for the symbols to encode.
-        (valid-dictionary '(#*00 #*010 #*011 #*100 #*101 #*110
-                            #*1110 #*1111))
-        (index-array-to-encode (make-array 1 :element-type 'fixnum)))
+  (let* ((code-lengths #(2 3 3 3 3 3 4 4))
+         (n-chars (length code-lengths))
+         (hfm)
+         ;; Canonically ordered encoded dictionary for the symbols to encode.
+         (valid-dictionary '(#*00 #*010 #*011 #*100 #*101 #*110
+                             #*1110 #*1111))
+         (index-array-to-encode (make-array 1 :element-type 'fixnum)))
     (setf hfm (make-huffman-canon-from-code-lengths code-lengths))
     (pass "huffman-canon constructed from code lengths.")
     (testing "Encoded dictionary."
@@ -19,7 +21,21 @@
               (ok (equal valid-code (encode hfm index-array-to-encode))
                   (format nil "~A" valid-code))))
     (testing "Identity on random data."
-
-      )))
+      (let* ((n-syms 1000)
+             (random-characters (aops:generate (lambda () (random n-chars))
+                                               (list n-syms)))
+             (id-random-characters))
+        (setf id-random-characters
+              (decode hfm (encode hfm random-characters)))
+        (ok (loop for char across id-random-characters
+                  for valid-char across random-characters
+                  always (= char valid-char))
+            "Self-coherent.")))))
 
 ;;; Alphabet of one element.
+(deftest one-element
+  (let ((code-lengths #(1))
+        (hfm))
+    (setf hfm (make-huffman-canon-from-code-lengths code-lengths))
+    (pass "huffman-canon constructed from code lengths.")
+    (ok (equal #*0 (encode hfm #(0))) (format nil "~A" #*0))))

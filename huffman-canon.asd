@@ -20,7 +20,7 @@
   :author "karl"
   :license "UNLICENSE"
   :description "Rove test suite for huffman-canon."
-  :depends-on ("huffman-canon" "rove")
+  :depends-on ("huffman-canon" "rove" "array-operations")
   :components
   ((:module "test"
     :components ((:file "package")
