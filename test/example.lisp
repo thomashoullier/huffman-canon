@@ -65,3 +65,31 @@
 ;; => #(#\H #\F #\C)
 
 ;;; Initializing a huffman encoding from character frequencies.
+
+;; Let's say you initialize a Huffman encoding from scratch, ie you only have
+;; character frequencies of occurence and want to generate a series of code
+;; lengths defining the encoding.
+(defparameter *chars* #(#\A #\B #\C #\D #\E #\F #\G #\H))
+(defparameter *frequencies* #(10 10 10 10 10 15 5 5))
+;; You can use the boundary package-merge implementation for that:
+;; The frequencies need to be sorted in increasing order.
+(defparameter *joint* (make-array 0 :fill-pointer 0))
+(loop for char across *chars*
+      for freq across *frequencies* do
+        (vector-push-extend (list freq char) *joint*))
+;; => #((10 #\A) (10 #\B) (10 #\C) (10 #\D) (10 #\E) (50 #\F) (5 #\G) (5 #\H))
+(setf *joint* (stable-sort *joint* #'< :key #'car))
+;; => #((5 #\G) (5 #\H) (10 #\A) (10 #\B) (10 #\C) (10 #\D) (10 #\E) (50 #\F))
+(defparameter *length-limit* 4)
+(defparameter *code-lengths*
+  (bpm:a-to-l (bpm:encode-limited (sort *frequencies* #'<) *length-limit*)))
+;; => #(4 4 3 3 3 3 3 2)
+
+;; You can then assign these lengths to your characters.
+(loop for length across *code-lengths*
+      for cell across *joint* do
+        (setf (car cell) length))
+;; => #((4 #\G) (4 #\H) (3 #\A) (3 #\B) (3 #\C) (3 #\D) (3 #\E) (2 #\F))
+
+;; Once you're there, you can continue by instantiating your huffman
+;; encoder/decoder from the code lengths as shown above.
