@@ -39,3 +39,10 @@
     (setf hfm (make-huffman-canon-from-code-lengths code-lengths))
     (pass "huffman-canon constructed from code lengths.")
     (ok (equal #*0 (encode hfm #(0))) (format nil "~A" #*0))))
+
+;;; Errors - User input checking.
+(deftest user-input-checking
+  (testing "Code lengths in increasing order."
+    (ok (signals (make-huffman-canon-from-code-lengths #(1 2 2 3 2 5))) ""))
+  (testing "No zero code length."
+    (ok (signals (make-huffman-canon-from-code-lengths #(0 1 2 3 3))) "")))

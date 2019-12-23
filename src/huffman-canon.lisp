@@ -18,6 +18,16 @@ encoding messages."
 code-lengths: (l0 l1 ... ln-1) with li the length in bits of each encoded
 element of the alphabet. Sorted in increasing order. The index of the lengths
 in code-lengths will be used in lieu of symbol in encoding/decoding messages."
+  ;; Checking the user input.
+  (let ((last-length (aref code-lengths 0)))
+    ;; Increasing order of code lengths.
+    (loop for length across code-lengths do
+      (when (< length last-length)
+        (error "code-lengths must be sorted in increasing order."))
+      (setf last-length length))
+    ;; No code of zero length (would technically work but avoids problems).
+    (when (<= (aref code-lengths 0) 0)
+      (error "code-lengths must be strictly above zero.")))
   (let ((encoded-dictionary) (length-counts))
     (multiple-value-setq (encoded-dictionary length-counts)
       (encoded-dictionary-from-lengths code-lengths))
