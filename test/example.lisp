@@ -28,7 +28,7 @@
 
 ;; Now that we have our correspondance table between index and symbols,
 ;; we can generate the huffman encoder/decoder with sorted code lengths.
-(defparameter *huffman* (huffman-canon:make-huffman-canon-from-code-lengths
+(defparameter *huffman* (huffman-canon:make-huffman
                          (sort *code-lengths* #'<)))
 
 ;; We can print the whole encoded dictionary by encoding each symbol
@@ -65,7 +65,6 @@
 ;; => #(#\H #\F #\C)
 
 ;;; Initializing a huffman encoding from character frequencies.
-
 ;; Let's say you initialize a Huffman encoding from scratch, ie you only have
 ;; character frequencies of occurence and want to generate a series of code
 ;; lengths defining the encoding.

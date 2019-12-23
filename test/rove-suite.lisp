@@ -11,7 +11,7 @@
          (valid-dictionary '(#*00 #*010 #*011 #*100 #*101 #*110
                              #*1110 #*1111))
          (index-array-to-encode (make-array 1 :element-type 'fixnum)))
-    (setf hfm (make-huffman-canon-from-code-lengths code-lengths))
+    (setf hfm (make-huffman code-lengths))
     (pass "huffman-canon constructed from code lengths.")
     (testing "Encoded dictionary."
       (loop for valid-code in valid-dictionary
@@ -36,13 +36,13 @@
 (deftest one-element
   (let ((code-lengths #(1))
         (hfm))
-    (setf hfm (make-huffman-canon-from-code-lengths code-lengths))
+    (setf hfm (make-huffman code-lengths))
     (pass "huffman-canon constructed from code lengths.")
     (ok (equal #*0 (encode hfm #(0))) (format nil "~A" #*0))))
 
 ;;; Errors - User input checking.
 (deftest user-input-checking
   (testing "Code lengths in increasing order."
-    (ok (signals (make-huffman-canon-from-code-lengths #(1 2 2 3 2 5))) ""))
+    (ok (signals (make-huffman #(1 2 2 3 2 5))) ""))
   (testing "No zero code length."
-    (ok (signals (make-huffman-canon-from-code-lengths #(0 1 2 3 3))) "")))
+    (ok (signals (make-huffman #(0 1 2 3 3))) "")))

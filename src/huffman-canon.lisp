@@ -13,7 +13,7 @@ encoding messages."
     :accessor encoded-dictionary :initarg :encoded-dictionary)))
 
 ;;; Constructors.
-(defun make-huffman-canon-from-code-lengths (code-lengths)
+(defun make-huffman (code-lengths)
   "Build a huffman-canon instance from a set of code lengths.
 code-lengths: (l0 l1 ... ln-1) with li the length in bits of each encoded
 element of the alphabet. Sorted in increasing order. The index of the lengths
