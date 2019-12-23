@@ -27,10 +27,3 @@ in code-lengths will be used in lieu of symbol in encoding/decoding messages."
     (make-instance 'huffman-canon
                    :length-counts length-counts
                    :encoded-dictionary encoded-dictionary)))
-
-;; (defun make-huffman-canon-from-frequencies (frequencies)
-;;   "Build a huffman-canon instance from a set of symbol frequencies.
-;; Uses the boundary package-merge algorithm to build the huffman codes.
-;; frequencies: "
-;;
-;;   )

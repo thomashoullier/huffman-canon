@@ -1,4 +1,5 @@
 ;;;; Manual tests for huffman-canon.
+(require :huffman-canon)
 
 ;;; RFC1951 example
 (defparameter *lengths* #(2 3 3 3 3 3 4 4))
