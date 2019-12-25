@@ -46,3 +46,18 @@
     (ok (signals (make-huffman #(1 2 2 3 2 5))) ""))
   (testing "No zero code length."
     (ok (signals (make-huffman #(0 1 2 3 3))) "")))
+
+;;; Errors - Decoding
+(deftest corrupted-data
+  (let ((code-lengths #(2 3 3 3 3 3))
+        ;; The dictionary for these code-lengths is:
+        ;; #*00 #*010 #*011 #*100 #*101 #*110
+        (hfm)
+        (corrupted-message #*00100111)
+        ;; This translates to #(0 3 *error*)
+        )
+    (setf hfm (make-huffman code-lengths))
+    (pass "huffman-canon constructed.")
+    ;; Let us give the decoder an encoded message which does
+    ;; not correspond to anything in the dictionary.
+    (ok (signals (decode hfm corrupted-message)) "Data corrupted.")))

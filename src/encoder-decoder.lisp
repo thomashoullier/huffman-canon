@@ -37,25 +37,33 @@ bits-array: Array of bits constituting an encoded message. eg. #*110110100..."
           ;; Current read encoded message value, as an integer.
           (read-code 0)
           ;; Relative position of the encoded message in the current length bin.
-          (pos-in-length-bin 0))
+          (pos-in-length-bin 0)
+          ;; Maximum length of a code in the dictionary.
+          (max-length (length length-counts)))
       (loop while (< i-bit (length bits-array)) do
         (psetf first 0 pos-first 0 read-code 0)
-        (loop for count across length-counts do
-          ;; Set the LSB of the current code.
-          (incf read-code (aref bits-array i-bit))
-          (incf i-bit)
-          ;; When there are codes in the length bin.
-          (when (/= 0 count)
-            (setf pos-in-length-bin (- read-code first))
-            ;; When the current code is present in the current length bin.
-            (when (< pos-in-length-bin count)
-              ;; Return the decoded symbol index.
-              (vector-push-extend (+ pos-first pos-in-length-bin)
-                                  decoded-indices)
-              (return))
-            ;; Go to the next length bin.
-            (incf pos-first count)
-            (incf first count))
-          (psetf first (ash first 1)
-                 read-code (ash read-code 1))))
+        (loop for count across length-counts
+              for cur-length from 1 do
+                ;; Set the LSB of the current code.
+                (incf read-code (aref bits-array i-bit))
+                (incf i-bit)
+                ;; When there are codes in the length bin.
+                (when (/= 0 count)
+                  (setf pos-in-length-bin (- read-code first))
+                  ;; When the current code is present in the current length bin.
+                  (when (< pos-in-length-bin count)
+                    ;; Return the decoded symbol index.
+                    (vector-push-extend (+ pos-first pos-in-length-bin)
+                                        decoded-indices)
+                    (return))
+                  ;; Go to the next length bin.
+                  (incf pos-first count)
+                  (incf first count))
+                (psetf first (ash first 1)
+                       read-code (ash read-code 1))
+                ;; If this point in the loop is reached at the last length bin,
+                ;; then no symbol was found in the dictionary for the given
+                ;; bit-vector.
+                (when (>= cur-length max-length)
+                  (error "No symbol found. Data may be corrupted."))))
       decoded-indices)))
