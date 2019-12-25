@@ -217,9 +217,6 @@ A simple rove test suite is written. To launch it:
 ## Issues
 * No performance optimization was done. I'll probably put some type hinting
   at some point in the future as I start using the library.
-* Decoding from a corrupted bit-vector, meaning that some sequence of bits
-will possibly not be present in the Huffman codes, will in most cases land you
-in the debugger. I have written no errors for this case yet.
 
 ## Licensing
 See the license file. Citations are appreciated but not needed.
