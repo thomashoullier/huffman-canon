@@ -1,6 +1,25 @@
 ;;;; Canonical Huffman encoder/decoder class definition.
 (in-package :huffman-canon)
 
+(defstruct decoding-state
+  ;; Structure used to save a decoding state, to decode a message
+  ;; chopped up in multiple parts with multiple calls to the decoder.
+  ;; The current length bin we are in during the decoding.
+  (cur-length 1)
+  ;; First encoded integer symbol value in the current length bin.
+  (first 0)
+  ;; Index of the first encoded symbol in the dictionary for each given length.
+  (pos-first 0)
+  ;; The currently decoded value, represented as an integer.
+  (read-code 0))
+
+(defun decoding-state-reset (decode-state)
+  "Reinitialize the struct decoding-state."
+  (psetf (decoding-state-first decode-state) 0
+         (decoding-state-pos-first decode-state) 0
+         (decoding-state-read-code decode-state) 0
+         (decoding-state-cur-length decode-state) 1))
+
 (defclass huffman-canon ()
   ((length-counts
     :documentation "Number of codes of each code-length. The first element is
@@ -10,7 +29,11 @@ length. Used when decoding canonical codes."
    (encoded-dictionary
     :documentation "Encoded message for each symbol in the alphabet. Used when
 encoding messages."
-    :accessor encoded-dictionary :initarg :encoded-dictionary)))
+    :accessor encoded-dictionary :initarg :encoded-dictionary)
+   (last-decode-state
+    :documentation "Saved decoding state from the last interrupted decoding."
+    :accessor last-decode-state
+    :initform (make-decoding-state))))
 
 ;;; Constructors.
 (defun make-huffman (code-lengths)

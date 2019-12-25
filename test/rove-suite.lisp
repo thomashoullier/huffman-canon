@@ -40,6 +40,36 @@
     (pass "huffman-canon constructed from code lengths.")
     (ok (equal #*0 (encode hfm #(0))) (format nil "~A" #*0))))
 
+;;; Decoding chopped up messages.
+(deftest chopped-up-decoding
+  (let ((code-lengths #(2 3 3 3 3 3 4 4))
+        ;; Dictionary is:
+        ;; #*00 #*010 #*011 #*100 #*101 #*110 #*1110 #*1111
+        (message1 #*0001111)
+        ;; message1: #*00|011|11 ... 11 is just part of a code.
+        (message2 #*1000010)
+        ;; message2: ... #*10|00|010 , 10 is the last part of the code.
+        (message3 #*0111111)
+        ;; message3 just checks the state of the decoder is back to normal.
+        (decoded1) (decoded2) (decoded3)
+        (valid-decoded1 #(0 2))
+        (valid-decoded2 #(6 0 1))
+        (valid-decoded3 #(2 7))
+        (hfm))
+    (setf hfm (make-huffman code-lengths))
+    (pass "huffman-canon constructed.")
+    (setf decoded1 (decode hfm message1)
+          decoded2 (decode hfm message2)
+          decoded3 (decode hfm message3))
+    (loop for decoded in (list decoded1 decoded2 decoded3)
+          for valid-decoded
+            in (list valid-decoded1 valid-decoded2 valid-decoded3)
+          for i-message from 1 do
+            (ok (loop for char across decoded
+                      for valid-char across valid-decoded
+                      always (= char valid-char))
+                (format nil "Message ~A" i-message)))))
+
 ;;; Errors - User input checking.
 (deftest user-input-checking
   (testing "Code lengths in increasing order."
