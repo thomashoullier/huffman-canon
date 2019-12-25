@@ -167,6 +167,39 @@ See the file `test/example.lisp` to run the code.
 ;; encoder/decoder from the code lengths as shown above.
 ```
 
+### Decoding a message in several parts
+Encoding a chopped up message is trivial. Decoding a message in several parts is
+not. `huffman-canon` saves the decoder internal state whenever only part of a
+symbol was decoded when the end of a message is reached. This way, you can call
+the decoder on a chopped up message and it will seamlessly continue where it
+left off.
+
+```common-lisp
+(defparameter *code-lengths* #(2 3 3 3 3 3 4 4))
+(defparameter *huffman* (huffman-canon:make-huffman *code-lengths*))
+;; Dictionary is: #*00 #*010 #*011 #*100 #*101 #*110 #*1110 #*1111
+
+;; Now let's say you want to decode a message chopped in parts, maybe because
+;; the message is too long to fit in memory.
+;; Complete message: #*000111110000100111111
+;; It decodes to: #*00|011|1110|00|010|011|1111
+;;                  0  2   6    0  1   2   7
+;; Let us cut it in multiple parts, we do not know where the boundaries between
+;; symbols are a priori:
+;; #*0001111 .. 1000010 .. 0111111
+(defparameter *message1* #*0001111)
+(defparameter *message2* #*1000010)
+(defparameter *message3* #*0111111)
+
+;; We can decode the messages by calling the decoder sequentially on them.
+(defparameter *decoded1* (huffman-canon:decode *huffman* *message1*))
+;; => #(0 2)
+(defparameter *decoded2* (huffman-canon:decode *huffman* *message2*))
+;; => #(6 0 1)
+(defparameter *decoded3* (huffman-canon:decode *huffman* *message3*))
+;; => #(2 7)
+```
+
 ## Dependencies
 * `huffman-canon`: None. [bpm](https://github.com/thomashoullier/bnd-pkg-merge)
 is useful for creating code lengths from frequencies.
