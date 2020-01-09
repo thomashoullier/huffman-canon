@@ -27,9 +27,7 @@
              (id-random-characters))
         (setf id-random-characters
               (decode hfm (encode hfm random-characters)))
-        (ok (loop for char across id-random-characters
-                  for valid-char across random-characters
-                  always (= char valid-char))
+        (ok (equalp id-random-characters random-characters)
             "Self-coherent.")))))
 
 ;;; Alphabet of one element.
@@ -65,9 +63,7 @@
           for valid-decoded
             in (list valid-decoded1 valid-decoded2 valid-decoded3)
           for i-message from 1 do
-            (ok (loop for char across decoded
-                      for valid-char across valid-decoded
-                      always (= char valid-char))
+            (ok (equalp decoded valid-decoded)
                 (format nil "Message ~A" i-message)))))
 
 ;;; Errors - User input checking.
